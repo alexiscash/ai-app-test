@@ -1,0 +1,47 @@
+'use client';
+
+import { FormEvent, useState } from 'react';
+
+export default function Home() {
+  const [story, setStory] = useState('');
+  const [result, setResult] = useState('');
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({ story }),
+    });
+
+    const data = await response.json();
+    setResult(data.output);
+  }
+
+  return (
+    <main className="p-6 max-w-2x1 mx-auto">
+      <h1 className="text-2x1 font-bold mb-4">LifeMadeArt - MVP</h1>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <textarea
+          className="border p-3 rounded"
+          rows={6}
+          placeholder="Tell me your story..."
+          value={story}
+          onChange={(e) => setStory(e.target.value)}
+        ></textarea>
+
+        <button className="bg-black text-white p-3 rounded hover:bg-grey-800" type="submit">
+          Generate
+        </button>
+      </form>
+
+      {result && (
+        <div className="mt-8 p-4 border rounded bg-grey-50">
+          <h2 className="font-semibold mb-2">AI Output</h2>
+          <p>{result}</p>
+        </div>
+      )}
+    </main>
+  );
+}

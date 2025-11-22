@@ -1,0 +1,19 @@
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+const apiKey: string | undefined = process.env.OPENAI_API_KEY;
+
+const client = new OpenAI({ apiKey });
+
+export async function POST(req: Request) {
+  const { story } = await req.json();
+
+  const completion = await client.responses.create({
+    model: 'gpt-4.1-mini',
+    input: 'Summarize the emotional tone of this story in 1 sentence: ' + story,
+  });
+
+  return NextResponse.json({
+    output: completion.output_text,
+  });
+}
