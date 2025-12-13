@@ -10,10 +10,29 @@ export async function POST(req: Request) {
 
   const completion = await client.responses.create({
     model: 'gpt-4.1-mini',
-    input: 'Summarize the emotional tone of this story in 1 sentence: ' + story,
+    input:
+      'Summarize the emotional tone of this story in 1 sentence then generate an image based on that summary: ' + story,
+    tools: [{ type: 'image_generation' }],
   });
 
+  console.log(completion);
+
   return NextResponse.json({
-    output: completion.output_text,
+    outputText: completion.output_text,
   });
 }
+
+// export async function POST(req: Request) {
+//   const { story } = await req.json();
+
+//   const completion = await client.responses.create({
+//     model: 'gpt-4.1-mini',
+//     input: 'Summarize the emotional tone of this story in 1 sentence: ' + story,
+//   });
+
+//   console.log(completion);
+
+//   return NextResponse.json({
+//     outputText: completion.output_text,
+//   });
+// }

@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 
 export default function Home() {
-  const [story, setStory] = useState('');
+  const [story, setStory] = useState('I once moved to New York and it was very lonely.');
   const [result, setResult] = useState('');
 
   async function handleSubmit(e: FormEvent) {
@@ -15,7 +15,7 @@ export default function Home() {
     });
 
     const data = await response.json();
-    setResult(data.output);
+    setResult(data.outputText);
   }
 
   return (
