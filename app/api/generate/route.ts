@@ -10,8 +10,7 @@ export async function POST(req: Request) {
 
   const completion = await client.responses.create({
     model: 'gpt-4.1-mini',
-    input:
-      'Summarize the emotional tone of this story in 1 sentence then generate an image based on that summary: ' + story,
+    input: prompt() + story,
     tools: [{ type: 'image_generation' }],
   });
 
@@ -20,6 +19,10 @@ export async function POST(req: Request) {
   return NextResponse.json({
     outputText: completion.output_text,
   });
+}
+
+function prompt() {
+  return 'Summarize the emotional tone of this story in 1 sentence then generate an image based on that summary: ';
 }
 
 // export async function POST(req: Request) {
