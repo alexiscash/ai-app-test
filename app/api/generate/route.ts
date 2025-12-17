@@ -1,41 +1,50 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { Response } from 'openai/resources/responses/responses.mjs';
 
-const apiKey: string | undefined = process.env.OPENAI_API_KEY;
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) throw new Error('OPENAI_API_KEY is not set');
 
 const client = new OpenAI({ apiKey });
+
+export interface ImageResponseBase64 {
+  outputText: string;
+  image: string;
+}
 
 export async function POST(req: Request) {
   const { story } = await req.json();
 
-  const completion = await client.responses.create({
-    model: 'gpt-4.1-mini',
-    input: prompt() + story,
-    tools: [{ type: 'image_generation' }],
+  const completion = await sendWithLogging(async () => {
+    return await client.responses.create({
+      model: 'gpt-4.1-mini',
+      input: prompt() + story,
+      tools: [{ type: 'image_generation' }],
+    });
   });
 
-  console.log(completion);
-
-  return NextResponse.json({
-    outputText: completion.output_text,
+  return NextResponse.json<ImageResponseBase64>({
+    outputText: completion.output_text ?? 'no output text was provided',
+    image: 'data:image/png;base64,' + (completion.output[1] as { result: string }).result,
   });
 }
 
-function prompt() {
-  return 'Summarize the emotional tone of this story in 1 sentence then generate an image based on that summary: ';
+function prompt(): string {
+  return 'Please summarize the emotional tone of this story in a few sentences then generate a 512 x 512 image based on that summary: ';
 }
 
-// export async function POST(req: Request) {
-//   const { story } = await req.json();
+async function sendWithLogging(func: () => Promise<Response>): Promise<Response> {
+  console.log('Sending request to OpenAI');
 
-//   const completion = await client.responses.create({
-//     model: 'gpt-4.1-mini',
-//     input: 'Summarize the emotional tone of this story in 1 sentence: ' + story,
-//   });
+  const intervalId = setInterval(() => console.log('Waiting for response...'), 5000);
 
-//   console.log(completion);
+  try {
+    const result = await func();
+    return result;
+  } finally {
+    clearInterval(intervalId);
+  }
+}
 
-//   return NextResponse.json({
-//     outputText: completion.output_text,
-//   });
-// }
+// TODO: adjust response to return image of lower quality and fixes smaller size in order to reduce token usage.
